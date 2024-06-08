@@ -10,3 +10,7 @@ I will use a dictionary data structure for this purpose, because each recipe wil
 ## Create an outer structure called all_recipes (holds all recipes)
 
 For the outer structure (all_recipes), I will opt to use a list data structure. This would allow the most flexibility while being sequential in nature, allowing me to sort, append, and remove lists (individual recipes) as needed due to lists’ mutable nature.
+
+## Exercise 1.2
+* Created a data structure with varying data types to store recipes containing their own internal data
+* Created a linear data structure to serve as an outer structure for the individual recipes
