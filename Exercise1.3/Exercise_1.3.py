@@ -49,6 +49,7 @@ for recipe in recipes_list:
     for ingredient in recipe["ingredients"]:
         print(ingredient)
     print("Difficulty level:", recipe["difficulty"])
+    # Adding a line break at the end of the recipe for formatting purposes
     print("")
 
 # Display all ingredients across all recipes in alphabetical order
