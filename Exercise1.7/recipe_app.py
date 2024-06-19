@@ -238,5 +238,40 @@ def edit_recipe():
         print("Error - no valid option was inputted. Please try again.")
     
     session.commit()
-    
-def delete_recipe()
+
+def delete_recipe():
+    print("")
+    print("="*40)
+    print("*** DELETE A RECIPE ***")
+    print("="*40)
+    print("")
+    if session.query(Recipe).count() < 1:
+        print("There are no recipes found!")
+        return
+    results = session.query(Recipe).with_entities(Recipe.id, Recipe.name).all()
+    ids_list = []
+    print("\nAVAILABLE RECIPES")
+    print("-"*40)
+    for result in results:
+        print(result)
+        ids_list.append(result[0])
+
+    try:
+        recipe_id = int(input("Enter the ID of the recipe you want to delete: "))
+        if recipe_id not in ids_list:
+             print("Recipe ID not found.")
+            return
+        confirm = input("Are you sure you want to delete this recipe? Enter 'yes' or 'no': ")
+        if confirm.lower() == "yes":
+            recipe_to_delete = session.query(Recipe).filter(Recipe.id == recipe_id).one()
+            session.delete(recipe_to_delete)
+            session.commit()
+        elif confirm.lower() == "no":
+            print("Recipe deletion cancelled.")
+            return
+        else:
+            print("Please confirm with a 'yes' or 'no'.")
+    except ValueError:
+        print("Input is invalid.")
+    except:
+        print("An unexpected error occurred.")
