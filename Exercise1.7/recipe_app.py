@@ -54,7 +54,7 @@ session = Session()
 def create_recipe():
     print("")
     print("="*40)
-    print("CREATE A NEW RECIPE")
+    print("*** CREATE A NEW RECIPE ***")
     print("="*40)
     print("")
 
@@ -106,6 +106,11 @@ def view_all_recipes():
         return
 
 def search_by_ingredients():
+    print("")
+    print("="*40)
+    print("*** SEARCH RECIPES BY INGREDIENTS ***")
+    print("="*40)
+    print("")
     if session.query(Recipe).count() < 1:
         print("There are no recipes found! Please create one to start searching!")
         return
@@ -153,6 +158,85 @@ def search_by_ingredients():
     for recipe in filtered_recipes:
         print(recipe)
 
-def edit_recipe()
+def edit_recipe():
+    print("")
+    print("="*40)
+    print("*** EDIT A RECIPE ***")
+    print("="*40)
+    print("")
+    if session.query(Recipe).count() < 1:
+        print("There are no recipes found! Please create one now!")
+        return
+    results = session.query(Recipe).with_entities(Recipe.id, Recipe.name).all()
+    ids_list = []
+    print("\nAVAILABLE RECIPES")
+    print("-"*40)
+    for result in results:
+        print(result)
+        ids_list.append(result[0])
 
+    try:
+        recipe_id = int(input("Enter the ID of the recipe you want to update: "))
+    except:
+        print("Input is invalid.")
+        return
+    
+    if recipe_id not in ids_list:
+        print("Recipe ID not found.")
+        return
+
+    recipe_to_edit = session.query(Recipe).filter(Recipe.id == recipe_id).one()
+    print("Available for Modification:")
+    print(f"\t1 - Name: {recipe_to_edit.name}")
+    print(f"\t2 - Ingredients: {recipe_to_edit.ingredients}")
+    print(f"\t3 - Cooking Time: {recipe_to_edit.cooking_time}")
+
+    try:
+        attribute = input("What would you like to update for this recipe? Enter 1, 2, or 3: ")
+        updated_value = input("What should it be changed to? ")
+    except ValueError:
+        print("One of more of your inputs is not in the right format")
+        return
+    except:
+        print("An unexpected error occurred.")
+        return
+
+    # Update name
+    if attribute == "1":
+        session.query(Recipe).filter(Recipe.id == recipe_id).update(Recipe.name: updated_value)
+        print("Recipe name updated to", updated_value)
+    
+    # Update ingredients
+    elif attribute == "2":
+        session.query(Recipe).filter(Recipe.id == recipe_id).update(Recipe.ingredients: updated_value)
+
+        recipe_ingredients = tuple(recipe_to_edit.ingredients.split(", "))
+
+        # Recalculate difficulty level & update in database
+        updated_difficulty = calc_difficulty(recipe_to_edit.cooking_time, recipe_ingredients)
+        session.query(Recipe).filter(Recipe.id == recipe_id).update(Recipe.difficulty: updated_difficulty)
+
+        print("Ingredients have been updated:")
+        for ingredient in recipe_ingredients:
+            print(" - " + ingredient)
+        print("Difficulty Automatically Updated to:", updated_difficulty)
+
+    # Update cooking time
+    elif attribute == "3":
+        updated_cooking_time = int(updated_value)
+        session.query(Recipe).filter(Recipe.id == recipe_id).update(Recipe.cooking_time: updated_cooking_time)
+        # Retrieve recipe details
+        recipe_ingredients = tuple(recipe_to_edit.ingredients.split(", "))
+
+        # Recalculate difficulty level & update in database
+        updated_difficulty = calc_difficulty(recipe_to_edit.cooking_time, recipe_ingredients)
+        session.query(Recipe).filter(Recipe.id == recipe_id).update(Recipe.difficulty: updated_difficulty)
+        print("Cooking Time updated to", updated_value, "minutes.")
+        print("Difficulty Automatically Updated to:", updated_difficulty)
+
+    else:
+        print("Error - no valid option was inputted. Please try again.")
+    
+    session.commit()
+    
 def delete_recipe()
