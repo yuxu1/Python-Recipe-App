@@ -275,3 +275,39 @@ def delete_recipe():
         print("Input is invalid.")
     except:
         print("An unexpected error occurred.")
+
+# Main Menu
+def main_menu():
+    choice = ""
+    # Loop runing the main menu;continues to loop through until user selects 'quit'
+    while (choice != 'quit'):
+        print("")
+        print("="*40)
+        print("MAIN MENU")
+        print("="*40)
+        print("What would you like to do?")
+        print("\t1. Create a new recipe")
+        print("\t2. View all recipes")
+        print("\t3. Search for recipes by ingredients")
+        print("\t4. Edit a recipe")
+        print("\t5. Delete a recipe")
+        print("\tType 'quit' to exit the program.")
+        choice = input("Your choice: ")
+
+        if choice == "1":
+            create_recipe()
+        elif choice == "2":
+            view_all_recipes()
+        elif choice == "3":
+            search_by_ingredients()
+        elif choice == "4":
+            edit_recipe()
+        elif choice == "5":
+            delete_recipe()
+        elif choice.lower() == "quit":
+            print("Exiting program now...")
+            print("Thank you for using. See you again soon.")
+            session.close()
+            engine.dispose()
+        else:
+            print("That is not a valid option.\n")
