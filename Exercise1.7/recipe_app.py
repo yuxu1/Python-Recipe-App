@@ -18,7 +18,6 @@ session = Session()
 # Declare Recipe model (inherit from Base class)
 class Recipe(Base):
     __tablename__ = "final_recipes"
-
     # Table Columns
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50))
@@ -72,22 +71,28 @@ def create_recipe():
     print("="*40)
     print("")
 
+    # Collect recipe name from user & validate input
     while True:
         name = input("Enter a name for the recipe: ")
         if len(name) < 1 or len(name) > 50:
             print("Please enter a recipe name between 1 - 5 characters!")
         else: break
 
+    # Collect cooking time from user & validate input
     while True:
         cooking_time_input = input("Enter the cooking time of the recipe(in minutes): ")
+        # Check if something is inputted
         if len(cooking_time_input) == 0:
             print("Please enter a time (a rough estimate is fine)!")
+        # Check if input is a number
         elif not cooking_time_input.isnumeric():
             print("Please input numbers only!")
+        # Convert input into an integer after validation
         else:
             cooking_time = int(cooking_time_input)
             break
 
+    # Collect amd validate ingredients input from user
     ingredients = []
     while True:
         num_of_ingredients = input("How many ingredients would you like to input? ")
@@ -95,13 +100,17 @@ def create_recipe():
             print("Please enter a number!")
         elif int(num_of_ingredients) <= 0:
             print("Please enter a positive number!")
+        # Collect ingredients from user 1 by 1, appending to list
         else:
             for item in range(int(num_of_ingredients)):
                 ingredient_entry = input("Please enter an ingredient: ")
                 if ingredient_entry != "":
                     ingredients.append(ingredient_entry)
             break
+    # Combine ingredients in list into one string
     ingredients = ", ".join(ingredients)
+
+    # Create new recipe object using the user inputs
     recipe_entry = Recipe(
         name = name,
         ingredients = ingredients,
@@ -112,12 +121,16 @@ def create_recipe():
     session.commit()
     print("\nRecipe successfully added!")
 
+# Function 2 - View all recipes in table
 def view_all_recipes():
+    # Header
     print("")
     print("="*40)
     print("*** ALL RECIPES ***")
     print("="*40)
     print("")
+
+    # Retrieve and display all recipes unless none were created
     all_recipes = session.query(Recipe).all()
     if all_recipes:
         for recipe in all_recipes:
@@ -126,33 +139,44 @@ def view_all_recipes():
         print("No recipes were found. Please create one!")
         return
 
+# Function 3 - Search recipes by ingredient(s)
 def search_by_ingredients():
+    # Header
     print("")
     print("="*40)
     print("*** SEARCH RECIPES BY INGREDIENTS ***")
     print("="*40)
     print("")
+
+    # If no entries exist, notify user and exit function
     if session.query(Recipe).count() < 1:
         print("There are no recipes found! Please create one to start searching!")
         return
+    
     results = session.query(Recipe.ingredients).all()
     all_ingredients = []
+    # Loop through all ingredients and add ingredients to all_ingredients (avoid duplicates)
     for row in results:
+        # Split up ingredients from each recipe's ingredients list(combined string)
         split_ingredients = row[0].split(", ")
         for ingredient in split_ingredients:
+            # Convert all ingredients to lowercase for more standardized comparison
             formatted_ingredient = ingredient.lower()
+            # Add ingredient to list if not already on the list
             if formatted_ingredient not in all_ingredients:
                 all_ingredients.append(formatted_ingredient)
 
+    # Display all unique ingredients with a number displayed next to each ingredient
     ingredients_numbered = list(enumerate(all_ingredients))
     print("All Ingredients:")
     for ingredient in ingredients_numbered:
         print(ingredient)
 
-    # Allow user to pick a number from enumerated list (ingredient to search for)
+    # Allow user to pick 1 or more numbers from enumerated list (ingredient(s) to search for)
     try:
-        indexes = input("Enter the ingredient number(s) you want to search for (seperated with a space: ").split(" ")
+        indexes = input("Enter the ingredient number(s) you want to search for (seperated with a space): ").split(" ")
         search_ingredients = []
+        # Match user selection(s) to the corresponding ingredient names
         for index in indexes:
             search_index = int(index)
             search_ingredients.append(ingredients_numbered[search_index][1])
@@ -163,11 +187,13 @@ def search_by_ingredients():
     except:
         print("An unexpected error has occurred.")
     
+    # List containing search conditions created for each search ingredient
     conditions = []
     for ingredient in search_ingredients:
         like_term = f"%{ingredient}%"
         conditions.append(Recipe.ingredients.like(like_term))
 
+    # Retrieve & display recipes from database that match the search conditions
     filtered_recipes = session.query(Recipe).filter(*conditions).all()
     if not filtered_recipes:
         print("\nThere are no recipes containing those ingredients.\n")
@@ -175,19 +201,24 @@ def search_by_ingredients():
         print("="*40)
         print(f"Recipes Containing {search_ingredients}:")
         print("="*40)
-
     for recipe in filtered_recipes:
         print(recipe)
 
+# Function 4 - Edit an existing recipe
 def edit_recipe():
+    # Header
     print("")
     print("="*40)
     print("*** EDIT A RECIPE ***")
     print("="*40)
     print("")
+
+    # If no entries created, notify user and exit function
     if session.query(Recipe).count() < 1:
         print("There are no recipes found! Please create one now!")
         return
+    
+    # Retrieve & display ID and name of all recipes in database
     results = session.query(Recipe).with_entities(Recipe.id, Recipe.name).all()
     ids_list = []
     print("AVAILABLE RECIPES")
@@ -196,22 +227,26 @@ def edit_recipe():
         print(result)
         ids_list.append(result[0])
 
+    # Allow user to select a recipe by inputting the corresponding ID
     try:
         recipe_id = int(input("Enter the ID of the recipe you want to update: "))
     except:
         print("Input is invalid.")
         return
     
+    # Validate if ID matches a recipe
     if recipe_id not in ids_list:
         print("Recipe ID not found.")
         return
 
+    # Retrieve the recipe selected by the user & display the editable attributes
     recipe_to_edit = session.query(Recipe).filter(Recipe.id == recipe_id).one()
     print("Available for Modification:")
     print(f"\t1 - Name: {recipe_to_edit.name}")
     print(f"\t2 - Ingredients: {recipe_to_edit.ingredients}")
     print(f"\t3 - Cooking Time: {recipe_to_edit.cooking_time}")
 
+    # Allow user to select an attribute to edit & the new desired value
     try:
         attribute = input("What would you like to update for this recipe? Enter 1, 2, or 3: ")
         updated_value = input("What should it be changed to? ")
@@ -232,8 +267,9 @@ def edit_recipe():
     elif attribute == "2":
         recipe_to_edit.ingredients = updated_value
         recipe_ingredients = tuple(recipe_to_edit.ingredients.split(", "))
-        # Recalculate difficulty level & update in database
+        # Recalculate difficulty level & update
         recipe_to_edit.calc_difficulty()
+        # Notify user of successful update
         print("Ingredients have been updated:")
         for ingredient in recipe_ingredients:
             print(" - " + ingredient)
@@ -244,8 +280,9 @@ def edit_recipe():
         updated_cooking_time = int(updated_value)
         recipe_to_edit.cooking_time = updated_cooking_time
         recipe_ingredients = tuple(recipe_to_edit.ingredients.split(", "))
-
+        # Recalculate difficulty level & update
         recipe_to_edit.calc_difficulty()
+        # Notify user of successful update
         print("Cooking Time updated to", updated_value, "minutes.")
         print("Difficulty Automatically Updated to:", recipe_to_edit.difficulty)
 
@@ -257,15 +294,21 @@ def edit_recipe():
     except:
         session.rollback()
 
+# Function 5 - delete a recipe
 def delete_recipe():
+    # Header
     print("")
     print("="*40)
     print("*** DELETE A RECIPE ***")
     print("="*40)
     print("")
+
+    # If no entries exist, notify user & exit function
     if session.query(Recipe).count() < 1:
         print("There are no recipes found!")
         return
+    
+    # Retrieve & display ID and name of all recipes
     results = session.query(Recipe).with_entities(Recipe.id, Recipe.name).all()
     ids_list = []
     print("\nAVAILABLE RECIPES")
@@ -274,18 +317,25 @@ def delete_recipe():
         print(result)
         ids_list.append(result[0])
 
+    # Allow user to select a recipe through its ID
     try:
         recipe_id = int(input("Enter the ID of the recipe you want to delete: "))
+        # Validate if ID inputted matches a recipe
         if recipe_id not in ids_list:
             print("Recipe ID not found.")
             return
+        # Retrieve the recipe selected by user
         recipe_to_delete = session.query(Recipe).filter(Recipe.id == recipe_id).one()
+        
+        # User confirmation before actual deletion
         confirm = input("Are you sure you want to delete this recipe? Enter 'yes' or 'no': ")
+        # If confirmed, continue with deletion
         if confirm.lower() == "yes":
             session.delete(recipe_to_delete)
             session.commit()
             print("\nRecipe successfully deleted")
             return
+        # If not confirmed, cancel deletion and return to main menu
         elif confirm.lower() == "no":
             print("Recipe deletion cancelled.")
             return
@@ -295,7 +345,6 @@ def delete_recipe():
         print("Input is invalid.")
     except:
         print("An unexpected error occurred.")
-
 
 # Main Menu
 def main_menu():
@@ -333,4 +382,5 @@ def main_menu():
         else:
             print("That is not a valid option.\n")
 
+# Load main menu
 main_menu()
