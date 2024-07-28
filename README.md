@@ -1,4 +1,5 @@
-# Recipe App (Command Line Version)
+# Recipe App (Command Line Version) [Achievement 1]
+* see Web Application Version @ [https://github.com/yuxu1/recipe-app](https://github.com/yuxu1/recipe-app)
 
 ## Objective:
 Use Python to build a command line application for a recipe app, which is able to create, read, and modify recipes, as well as allow for searching of recipes based on ingredients.
@@ -16,3 +17,7 @@ Use Python to build a command line application for a recipe app, which is able t
 * pip (install and manage packages)
 * MySQL (database - locally hosted)
 * SQLAlchemy toolkit (for its object-relationship mapper)
+
+## External Links/Files:
+* Exercise 2.6 Screen Recording: https://youtu.be/cTUekpwQUns
+* Exercise 2.7 User Journey (screen recording): https://youtu.be/AWA3fZ28_D8
